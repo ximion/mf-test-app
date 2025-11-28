@@ -10,6 +10,7 @@
 #include <QDBusConnection>
 #include <QDBusConnectionInterface>
 #include <QDesktopServices>
+#include <QDirIterator>
 #include <QElapsedTimer>
 #include <QFile>
 #include <QFileDialog>
@@ -33,10 +34,13 @@
 #include <QVBoxLayout>
 
 #include <algorithm>
+#include <cstdlib>
 
 #include <functional>
 #include <memory>
 #include <unistd.h>
+
+#include "mftestapp.h"
 
 class GLView : public QOpenGLWidget, protected QOpenGLFunctions
 {
@@ -288,6 +292,45 @@ static QString loadedLibraries()
     return QStringLiteral("%1 shared objects mapped\n\n%2").arg(libs.size()).arg(libs.join(QLatin1Char('\n')));
 }
 
+// Directories searched recursively for plugins: $MFTESTAPP_PLUGIN_PATH, then
+// the built-in one
+static QStringList pluginDirs()
+{
+    QStringList dirs = qEnvironmentVariable("MFTESTAPP_PLUGIN_PATH").split(QLatin1Char(':'), Qt::SkipEmptyParts);
+    dirs << QStringLiteral(PLUGINDIR);
+    return dirs;
+}
+
+static QString pluginReport()
+{
+    QString out = QStringLiteral("libmftestapp API %1, loaded from %2\nSearched: %3\n\n")
+                      .arg(mftest_api_version())
+                      .arg(QString::fromUtf8(mftest_library_path()), pluginDirs().join(QStringLiteral(", ")));
+    int found = 0;
+    for (const QString &dir : pluginDirs()) {
+        QDirIterator it(dir, {QStringLiteral("*.so")}, QDir::Files, QDirIterator::Subdirectories);
+        while (it.hasNext()) {
+            const QString path = it.next();
+            ++found;
+            char *error = nullptr;
+            const MfTestPlugin *plugin = mftest_plugin_load(QFile::encodeName(path).constData(), &error);
+            if (plugin == nullptr) {
+                out += QStringLiteral("%1\n  not loaded: %2\n\n").arg(path, QString::fromUtf8(error));
+                std::free(error);
+                continue;
+            }
+            char *text = plugin->report != nullptr ? plugin->report() : nullptr;
+            out += QStringLiteral("%1: %2\n  %3\n  %4\n\n")
+                       .arg(QString::fromUtf8(plugin->name), QString::fromUtf8(plugin->description), path,
+                            QString::fromUtf8(text));
+            std::free(text);
+        }
+    }
+    if (found == 0)
+        out += QStringLiteral("No plugins found.\n");
+    return out;
+}
+
 static QWidget *makeDesktopTab()
 {
     auto *page = new QWidget;
@@ -338,7 +381,8 @@ int main(int argc, char *argv[])
     // Without a GUI, for the systemd units: print the probes and exit
     if (std::any_of(argv + 1, argv + argc, [](const char *arg) { return qstrcmp(arg, "--report") == 0; })) {
         QCoreApplication app(argc, argv);
-        QTextStream(stdout) << systemInfo() << "\n=== Libraries ===\n" << loadedLibraries() << "\n";
+        QTextStream(stdout) << systemInfo() << "\n=== Plugins ===\n" << pluginReport()
+                            << "\n=== Libraries ===\n" << loadedLibraries() << "\n";
         return 0;
     }
 
@@ -349,7 +393,7 @@ int main(int argc, char *argv[])
     parser.setApplicationDescription(QStringLiteral("Test application for Manifold"));
     parser.addHelpOption();
     parser.addVersionOption();
-    parser.addOption({QStringLiteral("report"), QStringLiteral("Print the environment probes to stdout and exit.")});
+    parser.addOption({QStringLiteral("report"), QStringLiteral("Print the environment probes and plugins to stdout and exit.")});
     const QCommandLineOption openOption(QStringLiteral("open"), QStringLiteral("Show <file> in a tab."), QStringLiteral("file"));
     parser.addOption(openOption);
     parser.process(app);
@@ -358,6 +402,7 @@ int main(int argc, char *argv[])
     tabs->addTab(makeFilesTab(), QStringLiteral("Files"));
     tabs->addTab(makeTextTab(systemInfo), QStringLiteral("System"));
     tabs->addTab(makeTextTab(loadedLibraries), QStringLiteral("Libraries"));
+    tabs->addTab(makeTextTab(pluginReport), QStringLiteral("Plugins"));
     tabs->addTab(makeDesktopTab(), QStringLiteral("Desktop"));
     if (parser.isSet(openOption)) {
         const QString path = parser.value(openOption);

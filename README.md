@@ -15,8 +15,21 @@ app installs, below its prefix:
 | `share/mime/packages/com.example.mftestapp.xml` | `xdg-mime query filetype foo.mftest` gives `application/x-mftestapp` |
 | `share/applications/com.example.mftestapp.open.desktop` | `xdg-open foo.mftest` opens the app on that file |
 
-Both units run `mftestapp --report`, which prints the System and
-Libraries probes to stdout without a GUI.
+Both units run `mftestapp --report`, which prints the System, Plugins
+and Libraries probes to stdout without a GUI.
+
+## Shared library and plugins
+
+The app links against its own shared library, `libmftestapp`, installed to
+the usual `libdir` with its header and a pkg-config file.
+
+The library is also the plugin API, see `lib/mftestapp.h`. A plugin is a
+shared object exporting `mftest_plugin_info()`. The app loads every `*.so`
+it finds, recursively, below the directories in `MFTESTAPP_PLUGIN_PATH`
+(colon-separated) and below the `plugindir` build option, which defaults
+to `LIBDIR/mftestapp/plugins`.
+
+`examples/plugin` is an example plugin.
 
 ## Building
 

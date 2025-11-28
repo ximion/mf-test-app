@@ -1,0 +1,2 @@
+option('plugindir', type: 'string', value: '',
+  description: 'Directory searched recursively for plugins (default: LIBDIR/mftestapp/plugins)')
