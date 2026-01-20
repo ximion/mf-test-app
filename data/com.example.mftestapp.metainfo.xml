@@ -5,12 +5,18 @@
   <project_license>MIT</project_license>
 
   <name>Manifold Test App</name>
-  <summary>Renders an OpenGL scene with an FPS counter</summary>
+  <summary>OpenGL scene with FPS counter and environment probes</summary>
   <description>
     <p>
       A small Qt application for testing Manifold. It draws a spinning
-      triangle with OpenGL and shows the OpenGL renderer in use, to check
-      that graphics work inside a Manifold image.
+      triangle with OpenGL and shows the frame rate and the OpenGL renderer
+      in use, to check that graphics work inside a Manifold image.
+    </p>
+    <p>
+      Beside it are a file system browser, a view of the environment, mounts
+      and identity of the process, the list of loaded shared libraries, and
+      buttons to try the file dialog, URL opening, the clipboard and the
+      D-Bus session bus.
     </p>
   </description>
 

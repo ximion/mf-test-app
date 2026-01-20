@@ -5,7 +5,7 @@ project('mftestapp', 'cpp',
   default_options: ['cpp_std=c++17', 'warning_level=2'],
 )
 
-qt6_dep = dependency('qt6', modules: ['Core', 'Gui', 'OpenGL'])
+qt6_dep = dependency('qt6', modules: ['Core', 'Gui', 'Widgets', 'OpenGL', 'OpenGLWidgets', 'DBus'])
 
 executable('mftestapp', 'src/main.cpp',
   dependencies: qt6_dep,
