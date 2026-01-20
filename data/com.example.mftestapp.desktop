@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Manifold Test App
+Comment=Renders an OpenGL scene with an FPS counter
+Exec=mftestapp
+Icon=com.example.mftestapp
+Categories=Utility;

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>com.example.mftestapp</id>
+  <metadata_license>FSFAP</metadata_license>
+  <project_license>MIT</project_license>
+
+  <name>Manifold Test App</name>
+  <summary>Renders an OpenGL scene with an FPS counter</summary>
+  <description>
+    <p>
+      A small Qt application for testing Manifold. It draws a spinning
+      triangle with OpenGL and shows the OpenGL renderer in use, to check
+      that graphics work inside a Manifold image.
+    </p>
+  </description>
+
+  <developer id="com.example">
+    <name>Manifold Developers</name>
+  </developer>
+
+  <url type="homepage">https://github.com/ximion/mf-test-app</url>
+  <launchable type="desktop-id">com.example.mftestapp.desktop</launchable>
+  <provides>
+    <binary>mftestapp</binary>
+  </provides>
+  <content_rating type="oars-1.1"/>
+
+  <releases>
+    <release version="0.1.0" date="2026-01-20">
+      <description>
+        <p>Initial release.</p>
+      </description>
+    </release>
+  </releases>
+</component>
