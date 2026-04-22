@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Manifold Test App (open file)
+Comment=Shows a Manifold test app file
+Exec=mftestapp --open %f
+Icon=com.example.mftestapp
+MimeType=application/x-mftestapp;
+NoDisplay=true

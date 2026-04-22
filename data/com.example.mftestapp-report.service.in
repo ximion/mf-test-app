@@ -1,0 +1,9 @@
+[Unit]
+Description=Manifold test app: report the environment (@KIND@ unit)
+
+[Service]
+Type=oneshot
+ExecStart=@BINDIR@/mftestapp --report
+
+[Install]
+WantedBy=@WANTEDBY@

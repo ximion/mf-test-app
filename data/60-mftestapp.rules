@@ -1,0 +1,4 @@
+# Manifold test rule: marks /dev/null, so that
+#   udevadm info /dev/null | grep MFTESTAPP
+# shows whether the rule is installed and active.
+SUBSYSTEM=="mem", KERNEL=="null", ENV{MFTESTAPP}="1"

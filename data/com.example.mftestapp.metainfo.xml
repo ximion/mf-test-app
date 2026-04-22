@@ -18,6 +18,12 @@
       buttons to try the file dialog, URL opening, the clipboard and the
       D-Bus session bus.
     </p>
+    <p>
+      To test host integration, it also installs a system and a user
+      systemd unit that print the same probes to the journal, a udev rule
+      that marks /dev/null, a MIME type for *.mftest files and a hidden
+      desktop entry that opens them.
+    </p>
   </description>
 
   <developer id="com.example">
@@ -28,6 +34,7 @@
   <launchable type="desktop-id">com.example.mftestapp.desktop</launchable>
   <provides>
     <binary>mftestapp</binary>
+    <mediatype>application/x-mftestapp</mediatype>
   </provides>
   <content_rating type="oars-1.1"/>
 

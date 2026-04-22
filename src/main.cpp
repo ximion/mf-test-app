@@ -6,6 +6,7 @@
 
 #include <QApplication>
 #include <QClipboard>
+#include <QCommandLineParser>
 #include <QDBusConnection>
 #include <QDBusConnectionInterface>
 #include <QDesktopServices>
@@ -25,10 +26,13 @@
 #include <QProcessEnvironment>
 #include <QPushButton>
 #include <QSplitter>
+#include <QTextStream>
 #include <QTabWidget>
 #include <QTreeView>
 #include <QUrl>
 #include <QVBoxLayout>
+
+#include <algorithm>
 
 #include <functional>
 #include <memory>
@@ -328,16 +332,39 @@ static QWidget *makeDesktopTab()
 
 int main(int argc, char *argv[])
 {
+    QCoreApplication::setApplicationName(QStringLiteral("mftestapp"));
+    QCoreApplication::setApplicationVersion(QStringLiteral(APP_VERSION));
+
+    // Without a GUI, for the systemd units: print the probes and exit
+    if (std::any_of(argv + 1, argv + argc, [](const char *arg) { return qstrcmp(arg, "--report") == 0; })) {
+        QCoreApplication app(argc, argv);
+        QTextStream(stdout) << systemInfo() << "\n=== Libraries ===\n" << loadedLibraries() << "\n";
+        return 0;
+    }
+
     QApplication app(argc, argv);
-    QApplication::setApplicationName(QStringLiteral("mftestapp"));
-    QApplication::setApplicationVersion(QStringLiteral(APP_VERSION));
     QApplication::setDesktopFileName(QStringLiteral("com.example.mftestapp"));
+
+    QCommandLineParser parser;
+    parser.setApplicationDescription(QStringLiteral("Test application for Manifold"));
+    parser.addHelpOption();
+    parser.addVersionOption();
+    parser.addOption({QStringLiteral("report"), QStringLiteral("Print the environment probes to stdout and exit.")});
+    const QCommandLineOption openOption(QStringLiteral("open"), QStringLiteral("Show <file> in a tab."), QStringLiteral("file"));
+    parser.addOption(openOption);
+    parser.process(app);
 
     auto *tabs = new QTabWidget;
     tabs->addTab(makeFilesTab(), QStringLiteral("Files"));
     tabs->addTab(makeTextTab(systemInfo), QStringLiteral("System"));
     tabs->addTab(makeTextTab(loadedLibraries), QStringLiteral("Libraries"));
     tabs->addTab(makeDesktopTab(), QStringLiteral("Desktop"));
+    if (parser.isSet(openOption)) {
+        const QString path = parser.value(openOption);
+        auto *view = makeTextView();
+        view->setPlainText(readFile(path));
+        tabs->setCurrentIndex(tabs->addTab(view, QFileInfo(path).fileName()));
+    }
 
     QSplitter window;
     window.addWidget(new GLView);
